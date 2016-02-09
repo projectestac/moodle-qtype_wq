@@ -23,6 +23,7 @@ class com_wiris_util_xml_WCharacterBase {
 	static $TILDE = 126;
 	static $MACRON = 175;
 	static $COMBINING_LOW_LINE = 818;
+	static $MODIFIER_LETTER_CIRCUMFLEX_ACCENT = 710;
 	static $CARON = 711;
 	static $EN_QUAD = 8192;
 	static $EM_QUAD = 8193;
@@ -216,7 +217,7 @@ class com_wiris_util_xml_WCharacterBase {
 		if(1552 <= $c && $c <= 8188) {
 			return true;
 		}
-		if($c === 8450 || $c === 8461 || $c === 8469 || $c === 8472 || $c === 8473 || $c === 8474 || $c === 8477 || $c === 8484 || $c === 120128) {
+		if($c === 8472 || $c === 8467 || com_wiris_util_xml_WCharacterBase::isDoubleStruck($c) || com_wiris_util_xml_WCharacterBase::isFraktur($c) || com_wiris_util_xml_WCharacterBase::isScript($c)) {
 			return true;
 		}
 		if(com_wiris_util_xml_WCharacterBase::isChinese($c)) {
@@ -226,6 +227,21 @@ class com_wiris_util_xml_WCharacterBase {
 			return true;
 		}
 		return false;
+	}
+	static function isUnicodeMathvariant($c) {
+		return com_wiris_util_xml_WCharacterBase::isDoubleStruck($c) || com_wiris_util_xml_WCharacterBase::isFraktur($c) || com_wiris_util_xml_WCharacterBase::isScript($c);
+	}
+	static function isRequiredByQuizzes($c) {
+		return $c === 120128 || $c === 8450 || $c === 8461 || $c === 8469 || $c === 8473 || $c === 8474 || $c === 8477 || $c === 8484;
+	}
+	static function isDoubleStruck($c) {
+		return $c >= 120120 && $c <= 120171 || $c === 8450 || $c === 8461 || $c === 8469 || $c === 8473 || $c === 8474 || $c === 8477 || $c === 8484;
+	}
+	static function isFraktur($c) {
+		return $c >= 120068 && $c <= 120119 || $c === 8493 || $c === 8460 || $c === 8465 || $c === 8476 || $c === 8488;
+	}
+	static function isScript($c) {
+		return $c >= 119964 && $c <= 120015 || $c === 8458 || $c === 8459 || $c === 8466 || $c === 8464 || $c === 8499 || $c === 8500 || $c === 8492 || $c === 8495 || $c === 8496 || $c === 8497 || $c === 8475;
 	}
 	static function isLowerCase($c) {
 		return $c >= 97 && $c <= 122 || $c >= 224 && $c <= 255 || $c >= 591 && $c >= 659 || $c >= 661 && $c <= 687 || $c >= 940 && $c <= 974;
@@ -387,6 +403,93 @@ class com_wiris_util_xml_WCharacterBase {
 				return true;
 			}
 			++$i;
+		}
+		return false;
+	}
+	static function isDisplayedWithStix($c) {
+		if($c >= 592 && $c <= 687) {
+			return true;
+		}
+		if($c >= 688 && $c <= 767) {
+			return true;
+		}
+		if($c >= 8215 && $c <= 8233 || $c >= 8241 && $c <= 8303) {
+			return true;
+		}
+		if($c >= 8304 && $c <= 8351) {
+			return true;
+		}
+		if($c >= 8352 && $c <= 8399) {
+			return true;
+		}
+		if($c >= 8400 && $c <= 8447) {
+			return true;
+		}
+		if($c >= 8448 && $c <= 8527) {
+			return true;
+		}
+		if($c >= 8528 && $c <= 8591) {
+			return true;
+		}
+		if($c >= 8592 && $c <= 8703) {
+			return true;
+		}
+		if($c >= 8704 && $c <= 8959) {
+			return true;
+		}
+		if($c >= 8960 && $c <= 9215) {
+			return true;
+		}
+		if($c >= 9312 && $c <= 9471) {
+			return true;
+		}
+		if($c >= 9472 && $c <= 9599) {
+			return true;
+		}
+		if($c >= 9600 && $c <= 9631) {
+			return true;
+		}
+		if($c >= 9632 && $c <= 9727) {
+			return true;
+		}
+		if($c >= 9728 && $c <= 9983) {
+			return true;
+		}
+		if($c >= 9984 && $c <= 10175) {
+			return true;
+		}
+		if($c >= 10176 && $c <= 10223) {
+			return true;
+		}
+		if($c >= 10224 && $c <= 10239) {
+			return true;
+		}
+		if($c >= 10240 && $c <= 10495) {
+			return true;
+		}
+		if($c >= 10496 && $c <= 10623) {
+			return true;
+		}
+		if($c >= 10624 && $c <= 10751) {
+			return true;
+		}
+		if($c >= 10752 && $c <= 11007) {
+			return true;
+		}
+		if($c >= 11008 && $c <= 11263) {
+			return true;
+		}
+		if($c >= 12288 && $c <= 12351) {
+			return true;
+		}
+		if($c >= 57344 && $c <= 65535) {
+			return true;
+		}
+		if($c >= 119808 && $c <= 119963 || $c >= 120224 && $c <= 120831) {
+			return true;
+		}
+		if($c === 12398 || $c === 42791 || $c === 42898) {
+			return true;
 		}
 		return false;
 	}
