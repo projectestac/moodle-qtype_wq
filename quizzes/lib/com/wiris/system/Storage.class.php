@@ -38,11 +38,10 @@ class com_wiris_system_Storage {
 		return haxe_io_Bytes::ofData($this->readBinary())->toString();
 	}
 	public function readBinary() {
-		$res = null;
+		$bytes = null;
 		$fi = sys_io_File::read($this->location, true);
 		$bytes = $fi->readAll(null);
-		$res = $bytes->b;
-		return $res;
+		return $bytes->b;
 	}
 	public function write($s) {
 		$this->writeBinary(haxe_io_Bytes::ofString($s)->b);
@@ -66,7 +65,8 @@ class com_wiris_system_Storage {
 	static $directorySeparator;
 	static $resourcesDir;
 	static function newResourceStorage($name) {
-		return new com_wiris_system_Storage(com_wiris_system_Storage::getResourcesDir() . com_wiris_system_Storage::getDirectorySeparator() . $name);
+		$name = com_wiris_system_Storage::getResourcesDir() . com_wiris_system_Storage::getDirectorySeparator() . $name;
+		return new com_wiris_system_Storage($name);
 	}
 	static function newStorage($name) {
 		return new com_wiris_system_Storage($name);

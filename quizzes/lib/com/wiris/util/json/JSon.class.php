@@ -104,7 +104,6 @@ class com_wiris_util_json_JSon extends com_wiris_util_json_StringParser {
 		$sb = new StringBuf();
 		$d = $this->c;
 		$this->nextToken();
-		$this->skipBlanks();
 		while($this->c !== $d) {
 			if($this->c === 92) {
 				$this->nextToken();
@@ -126,7 +125,21 @@ class com_wiris_util_json_JSon extends com_wiris_util_json_StringParser {
 									if($this->c === 92) {
 										$sb->add("\\");
 									} else {
-										throw new HException("Unknown scape sequence '\\" . _hx_string_rec($this->c, "") . "'");
+										if($this->c === 117) {
+											$this->nextToken();
+											$code = com_wiris_util_json_JSon_2($this, $d, $sb);
+											$this->nextToken();
+											$code .= com_wiris_util_json_JSon_3($this, $code, $d, $sb);
+											$this->nextToken();
+											$code .= com_wiris_util_json_JSon_4($this, $code, $d, $sb);
+											$this->nextToken();
+											$code .= com_wiris_util_json_JSon_5($this, $code, $d, $sb);
+											$dec = Std::parseInt("0x" . $code);
+											$sb->add(com_wiris_util_json_JSon_6($this, $code, $d, $dec, $sb));
+											unset($dec,$code);
+										} else {
+											throw new HException("Unknown scape sequence '\\" . com_wiris_util_json_JSon_7($this, $d, $sb) . "'");
+										}
 									}
 								}
 							}
@@ -134,7 +147,7 @@ class com_wiris_util_json_JSon extends com_wiris_util_json_StringParser {
 					}
 				}
 			} else {
-				$sb->add(com_wiris_util_json_JSon_2($this, $d, $sb));
+				$sb->add(com_wiris_util_json_JSon_8($this, $d, $sb));
 			}
 			$this->nextToken();
 		}
@@ -358,6 +371,8 @@ class com_wiris_util_json_JSon extends com_wiris_util_json_StringParser {
 		else
 			throw new HException('Unable to call �'.$m.'�');
 	}
+	static function sb() { $팤rgs = func_get_args(); return call_user_func_array(self::$sb, $팤rgs); }
+	static $sb;
 	static function encode($o) {
 		$js = new com_wiris_util_json_JSon();
 		return $js->encodeObject($o);
@@ -439,6 +454,106 @@ class com_wiris_util_json_JSon extends com_wiris_util_json_StringParser {
 	static function getHash($a) {
 		return $a;
 	}
+	static function compare($a, $b, $eps) {
+		if(com_wiris_system_TypeTools::isHash($a)) {
+			$isBHash = com_wiris_system_TypeTools::isHash($b);
+			if(!$isBHash) {
+				return false;
+			}
+			$ha = $a;
+			$hb = $b;
+			$it = $ha->keys();
+			while($it->hasNext()) {
+				$key = $it->next();
+				if(!$hb->exists($key) || !com_wiris_util_json_JSon::compare($ha->get($key), $hb->get($key), $eps)) {
+					return false;
+				}
+				unset($key);
+			}
+			return true;
+		} else {
+			if(com_wiris_system_TypeTools::isArray($a)) {
+				$isBArray = com_wiris_system_TypeTools::isArray($b);
+				if(!$isBArray) {
+					return false;
+				}
+				$aa = $a;
+				$ab = $b;
+				if($aa->length !== $ab->length) {
+					return false;
+				}
+				$i = null;
+				{
+					$_g1 = 0; $_g = $aa->length;
+					while($_g1 < $_g) {
+						$i1 = $_g1++;
+						if(!com_wiris_util_json_JSon::compare($aa[$i1], $ab[$i1], $eps)) {
+							return false;
+						}
+						unset($i1);
+					}
+				}
+				return true;
+			} else {
+				if(Std::is($a, _hx_qtype("String"))) {
+					if(!Std::is($b, _hx_qtype("String"))) {
+						return false;
+					}
+					return _hx_equal($a, $b);
+				} else {
+					if(Std::is($a, _hx_qtype("Int"))) {
+						if(!Std::is($b, _hx_qtype("Int"))) {
+							return false;
+						}
+						return _hx_equal($a, $b);
+					} else {
+						if(Std::is($a, _hx_qtype("haxe.Int64"))) {
+							$isBLong = Std::is($b, _hx_qtype("haxe.Int64"));
+							if(!$isBLong) {
+								return false;
+							}
+							return _hx_equal($a, $b);
+						} else {
+							if(Std::is($a, _hx_qtype("com.wiris.util.json.JSonIntegerFormat"))) {
+								if(!Std::is($b, _hx_qtype("com.wiris.util.json.JSonIntegerFormat"))) {
+									return false;
+								}
+								$ja = $a;
+								$jb = $b;
+								return $ja->toString() === $jb->toString();
+							} else {
+								if(Std::is($a, _hx_qtype("Bool"))) {
+									if(!Std::is($b, _hx_qtype("Bool"))) {
+										return false;
+									}
+									return _hx_equal($a, $b);
+								} else {
+									if(Std::is($a, _hx_qtype("Float"))) {
+										if(!Std::is($b, _hx_qtype("Float"))) {
+											return false;
+										}
+										$da = com_wiris_util_json_JSon::getFloat($a);
+										$db = com_wiris_util_json_JSon::getFloat($b);
+										return $da >= $db - $eps && $da <= $db + $eps;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
+	static function main() {
+		$s1 = "{\"displays\":[{\"horizontal_axis_values_position\":\"below\",\"vertical_axis_label\":\"\",\"window_width\":450.,\"horizontal_axis_label\":\"\",\"styles\":[{\"color\":\"#9a0000\",\"ref\":\"line1\"},{\"color\":\"#105b5c\",\"ref\":\"conic1\"},{\"color\":\"#a3b017\",\"fixed\":false,\"ref\":\"point1\"},{\"color\":\"#a3b017\",\"fixed\":false,\"ref\":\"point2\"}],\"window_height\":450.,\"height\":21.,\"id\":\"plotter1\",\"grid_y\":true,\"width\":21.,\"grid_x\":true,\"axis_color\":\"#9696ff\",\"vertical_axis_values_position\":\"left\",\"grid_primary_color\":\"#ffc864\",\"background_color\":\"#fffff0\",\"axis_y\":true,\"axis_x\":true,\"center\":[0.,0.]}],\"elements\":[{\"type\":\"line_segment\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><apply><eq></eq><ci>y</ci><ci>x</ci></apply></math>\",\"coordinates\":[[-31.5,-31.5],[31.5,31.5]],\"id\":\"line1\"},{\"type\":\"path\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><apply><eq></eq><apply><plus></plus><apply><times></times><apply><minus></minus><apply><divide></divide><cn>1</cn><cn>4</cn></apply></apply><apply><power></power><ci>x</ci><cn>2</cn></apply></apply><ci>y</ci><cn>4</cn></apply><cn>0</cn></apply></math>\",\"coordinates\":[[9.795918464660645,19.99000358581543],[9.387755393981934,18.032485961914062],[8.979591369628906,16.158267974853516],[8.571428298950195,14.36734676361084],[8.163265228271484,12.659725189208984],[7.755102157592773,11.035402297973633],[7.346938610076904,9.494377136230469],[6.938775539398193,8.036651611328125],[6.530612468719482,6.662224292755127],[6.122448921203613,5.371095180511475],[5.714285850524902,4.163265228271484],[5.306122303009033,3.038733959197998],[4.897959232330322,1.997501015663147],[4.489795684814453,1.0395668745040894],[4.081632614135742,0.1649312824010849],[3.673469305038452,-0.626405656337738],[3.265306234359741,-1.3344439268112183],[2.857142925262451,-1.959183692932129],[2.448979616165161,-2.500624656677246],[2.040816307067871,-2.9587671756744385],[1.6326531171798706,-3.333611011505127],[1.2244898080825806,-3.6251561641693115],[0.8163265585899353,-3.833402633666992],[0.40816327929496765,-3.958350658416748],[0.,-4.],[-0.40816327929496765,-3.958350658416748],[-0.8163265585899353,-3.833402633666992],[-1.2244898080825806,-3.6251561641693115],[-1.6326531171798706,-3.333611011505127],[-2.040816307067871,-2.9587671756744385],[-2.448979616165161,-2.500624656677246],[-2.857142925262451,-1.959183692932129],[-3.265306234359741,-1.3344439268112183],[-3.673469305038452,-0.626405656337738],[-4.081632614135742,0.1649312824010849],[-4.489795684814453,1.0395668745040894],[-4.897959232330322,1.997501015663147],[-5.306122303009033,3.038733959197998],[-5.714285850524902,4.163265228271484],[-6.122448921203613,5.371095180511475],[-6.530612468719482,6.662224292755127],[-6.938775539398193,8.036651611328125],[-7.346938610076904,9.494377136230469],[-7.755102157592773,11.035402297973633],[-8.163265228271484,12.659725189208984],[-8.571428298950195,14.36734676361084],[-8.979591369628906,16.158267974853516],[-9.387755393981934,18.032485961914062],[-9.795918464660645,19.99000358581543],[-10.204081535339355,22.030820846557617]],\"id\":\"conic1\"},{\"type\":\"point\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><vector><apply><plus></plus><apply><times></times><apply><minus></minus><cn>2</cn></apply><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply><apply><plus></plus><apply><times></times><apply><minus></minus><cn>2</cn></apply><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply></vector></math>\",\"coordinates\":[-2.4721360206604004,-2.4721360206604004],\"id\":\"point1\"},{\"type\":\"point\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><vector><apply><plus></plus><apply><times></times><cn>2</cn><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply><apply><plus></plus><apply><times></times><cn>2</cn><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply></vector></math>\",\"coordinates\":[6.4721360206604,6.4721360206604],\"id\":\"point2\"}],\"constraints\":[]}";
+		$s2 = "{\"displays\":[{\"horizontal-axis-values-position\":\"below\",\"vertical-axis-label\":\"\",\"window-width\":450.,\"styles\":[{\"color\":\"#9a0000\",\"ref\":\"line1\"},{\"color\":\"#105b5c\",\"ref\":\"conic1\"},{\"color\":\"#a3b017\",\"fixed\":false,\"ref\":\"point1\"},{\"color\":\"#a3b017\",\"fixed\":false,\"ref\":\"point2\"}],\"background-color\":\"#fffff0\",\"height\":21.,\"id\":\"plotter1\",\"grid-y\":true,\"window-height\":450.,\"grid-x\":true,\"width\":21.,\"horizontal-axis-label\":\"\",\"vertical-axis-values-position\":\"left\",\"grid-primary-color\":\"#ffc864\",\"axis-color\":\"#9696ff\",\"axis-y\":true,\"axis-x\":true,\"center\":[0.,0.]}],\"elements\":[{\"type\":\"line_segment\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><apply><eq></eq><ci>y</ci><ci>x</ci></apply></math>\",\"coordinates\":[[-31.5,-31.5],[31.5,31.5]],\"id\":\"line1\"},{\"type\":\"path\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><apply><eq></eq><apply><plus></plus><apply><times></times><apply><minus></minus><apply><divide></divide><cn>1</cn><cn>4</cn></apply></apply><apply><power></power><ci>x</ci><cn>2</cn></apply></apply><ci>y</ci><cn>4</cn></apply><cn>0</cn></apply></math>\",\"coordinates\":[[9.795918464660645,19.99000358581543],[9.387755393981934,18.032485961914062],[8.979591369628906,16.158267974853516],[8.571428298950195,14.36734676361084],[8.163265228271484,12.659725189208984],[7.755102157592773,11.035402297973633],[7.346938610076904,9.494377136230469],[6.938775539398193,8.036651611328125],[6.530612468719482,6.662224292755127],[6.122448921203613,5.371095180511475],[5.714285850524902,4.163265228271484],[5.306122303009033,3.038733959197998],[4.897959232330322,1.997501015663147],[4.489795684814453,1.0395668745040894],[4.081632614135742,0.1649312824010849],[3.673469305038452,-0.626405656337738],[3.265306234359741,-1.3344439268112183],[2.857142925262451,-1.959183692932129],[2.448979616165161,-2.500624656677246],[2.040816307067871,-2.9587671756744385],[1.6326531171798706,-3.333611011505127],[1.2244898080825806,-3.6251561641693115],[0.8163265585899353,-3.833402633666992],[0.40816327929496765,-3.958350658416748],[0.,-4.],[-0.40816327929496765,-3.958350658416748],[-0.8163265585899353,-3.833402633666992],[-1.2244898080825806,-3.6251561641693115],[-1.6326531171798706,-3.333611011505127],[-2.040816307067871,-2.9587671756744385],[-2.448979616165161,-2.500624656677246],[-2.857142925262451,-1.959183692932129],[-3.265306234359741,-1.3344439268112183],[-3.673469305038452,-0.626405656337738],[-4.081632614135742,0.1649312824010849],[-4.489795684814453,1.0395668745040894],[-4.897959232330322,1.997501015663147],[-5.306122303009033,3.038733959197998],[-5.714285850524902,4.163265228271484],[-6.122448921203613,5.371095180511475],[-6.530612468719482,6.662224292755127],[-6.938775539398193,8.036651611328125],[-7.346938610076904,9.494377136230469],[-7.755102157592773,11.035402297973633],[-8.163265228271484,12.659725189208984],[-8.571428298950195,14.36734676361084],[-8.979591369628906,16.158267974853516],[-9.387755393981934,18.032485961914062],[-9.795918464660645,19.99000358581543],[-10.204081535339355,22.030820846557617]],\"id\":\"conic1\"},{\"type\":\"point\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><vector><apply><plus></plus><apply><times></times><apply><minus></minus><cn>2</cn></apply><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply><apply><plus></plus><apply><times></times><apply><minus></minus><cn>2</cn></apply><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply></vector></math>\",\"coordinates\":[-2.4721360206604004,-2.4721360206604004],\"id\":\"point1\"},{\"type\":\"point\",\"value-content\":\"<math  xmlns=\\\"http://www.w3.org/1998/Math/MathML\\\"><vector><apply><plus></plus><apply><times></times><cn>2</cn><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply><apply><plus></plus><apply><times></times><cn>2</cn><apply><root></root><cn>5</cn></apply></apply><cn>2</cn></apply></vector></math>\",\"coordinates\":[6.4721360206604,6.4721360206604],\"id\":\"point2\"}],\"constraints\":[]}";
+		if(com_wiris_util_json_JSon::compare(com_wiris_util_json_JSon::decode($s1), com_wiris_util_json_JSon::decode($s2), 1e-8)) {
+			haxe_Log::trace("Equal", _hx_anonymous(array("fileName" => "JSon.hx", "lineNumber" => 513, "className" => "com.wiris.util.json.JSon", "methodName" => "main")));
+		} else {
+			haxe_Log::trace("Not equal", _hx_anonymous(array("fileName" => "JSon.hx", "lineNumber" => 514, "className" => "com.wiris.util.json.JSon", "methodName" => "main")));
+		}
+	}
 	function __toString() { return 'com.wiris.util.json.JSon'; }
 }
 function com_wiris_util_json_JSon_0(&$퍁his, &$floating, &$hex, &$sb) {
@@ -456,6 +571,48 @@ function com_wiris_util_json_JSon_1(&$퍁his, &$floating, &$hex, &$sb) {
 	}
 }
 function com_wiris_util_json_JSon_2(&$퍁his, &$d, &$sb) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($퍁his->c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_json_JSon_3(&$퍁his, &$code, &$d, &$sb) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($퍁his->c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_json_JSon_4(&$퍁his, &$code, &$d, &$sb) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($퍁his->c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_json_JSon_5(&$퍁his, &$code, &$d, &$sb) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($퍁his->c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_json_JSon_6(&$퍁his, &$code, &$d, &$dec, &$sb) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($dec);
+		return $s->toString();
+	}
+}
+function com_wiris_util_json_JSon_7(&$퍁his, &$d, &$sb) {
+	{
+		$s = new haxe_Utf8(null);
+		$s->addChar($퍁his->c);
+		return $s->toString();
+	}
+}
+function com_wiris_util_json_JSon_8(&$퍁his, &$d, &$sb) {
 	{
 		$s = new haxe_Utf8(null);
 		$s->addChar($퍁his->c);
