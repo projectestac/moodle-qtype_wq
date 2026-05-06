@@ -1,0 +1,5 @@
+* @wiris/squad-wirisquizzes
+
+# Broad Haxe-related area — requires both teams review
+
+/quizzes/lib/ @wiris/squad-wirisquizzes @wiris/squad-mathtype-integrations
